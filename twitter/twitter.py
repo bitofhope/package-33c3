@@ -13,7 +13,7 @@ from cStringIO import StringIO
 from contextlib import closing
 
 import requests
-import Image
+from PIL import Image
 
 blocked = set(line.strip() for line in file("blocked.txt") if line.strip())
 
