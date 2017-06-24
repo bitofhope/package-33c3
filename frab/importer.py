@@ -6,6 +6,7 @@ import calendar
 import pytz
 from operator import itemgetter
 from datetime import timedelta
+from string import split
 
 import dateutil.parser
 import defusedxml.ElementTree as ET
@@ -24,18 +25,15 @@ def get_schedule(url, group):
             ts = int(calendar.timegm(dt.timetuple()))
             return ts
         def parse_duration(value):
-            h, m = map(int, value.split(':'))
+            h = value / 60
+            m = value % 60
             return timedelta(hours=h, minutes=m)
 
         parsed_events = []
         for event in json.loads(js):
             start = dateutil.parser.parse(event["start_time"])
-            duration = event["length"]
+            duration = parse_duration(event["length"])
             end = start + duration
-
-            persons = event.find('persons')
-            if persons is not None:
-                persons = persons.findall('person')
 
             parsed_events.append(dict(
                 start = start.astimezone(pytz.utc),
@@ -44,12 +42,14 @@ def get_schedule(url, group):
                 start_unix  = to_unixtimestamp(start),
                 end_unix = to_unixtimestamp(end),
                 duration = int(duration.total_seconds() / 60),
-                title = event["title"]
-                place = event["room_name"]
+                title = event["title"],
+                place = event["room_name"],
                 abstract = cleanhtml(event["description"]),
-                speakers = event["formatted_hosts"]
-                # lang = text_or_empty(event, 'language') or "unk",
-                group = group,
+                speakers = split(event["formatted_hosts"], ", "),
+                lang = "fi",
+                link = "",
+                group = "primary",
+                id = ""
             ))
         return parsed_events
 
