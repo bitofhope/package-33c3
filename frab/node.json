@@ -99,6 +99,7 @@
         "options": [
             ["UTC", "UTC"],
             ["Europe/Berlin", "Europa / Berlin"]
+            ["Europe/Helsinki", "Europa / Helsinki"]
         ],
         "default": "UTC"
     }, {
