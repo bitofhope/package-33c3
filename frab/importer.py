@@ -37,7 +37,7 @@ def get_schedule(url, group):
 
             parsed_events.append(dict(
                 start = start.astimezone(pytz.utc) + timedelta(hours=3),
-                start_str = start.strftime('%H:%M'),
+                start_str = (start + timedelta(hours=3)).strftime('%H:%M'),
                 end_str = end.strftime('%H:%M'),
                 start_unix  = to_unixtimestamp(start),
                 end_unix = to_unixtimestamp(end),
