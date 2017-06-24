@@ -31,12 +31,12 @@ def get_schedule(url, group):
 
         parsed_events = []
         for event in json.loads(js):
-            start = dateutil.parser.parse(event["start_time"]) + timedelta(hours=3)
+            start = dateutil.parser.parse(event["start_time"])
             duration = parse_duration(event["length"])
             end = start + duration
 
             parsed_events.append(dict(
-                #start = start.astimezone(pytz.utc),
+                start = start.astimezone(pytz.utc) + timedelta(hours=3),
                 start_str = start.strftime('%H:%M'),
                 end_str = end.strftime('%H:%M'),
                 start_unix  = to_unixtimestamp(start),
