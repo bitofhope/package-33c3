@@ -31,7 +31,7 @@ def get_schedule(url, group):
 
         parsed_events = []
         for event in json.loads(js):
-            start = dateutil.parser.parse(event["start_time"])
+            start = dateutil.parser.parse(event["start_time"]) + timedelta(hours=3)
             duration = parse_duration(event["length"])
             end = start + duration
 
