@@ -183,10 +183,6 @@ def is_tweet_garbage(tweet):
         print >>sys.stderr, "GARBAGE: ehh. retweet"
         return True
 
-    if tweet.user.default_profile:
-        print >>sys.stderr, "GARBAGE: Default profile"
-        return True
-
     if tweet.user.default_profile_image:
         print >>sys.stderr, "GARBAGE: Default profile image"
         return True

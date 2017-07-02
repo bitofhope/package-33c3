@@ -141,9 +141,9 @@ function M.task(starts, ends)
     elseif age < 3600 then
         age = string.format("%dm", age/60)
     elseif age < 86400 then
-        age = string.format("%dh", age/3600)
+        age = string.format("%dt", age/3600)
     else
-        age = string.format("%dd", age/86400)
+        age = string.format("%dp", age/86400)
     end
 
     local a = anims.Area(1920, 1080)
@@ -153,7 +153,7 @@ function M.task(starts, ends)
 
     local function mk_profile_box(x, y)
         local name = tweet.name
-        local info = "@"..tweet.screen_name..", "..age.." ago"
+        local info = "@"..tweet.screen_name..", "..age.." sitten"
 
         if profile_box then
             local profile_width = math.max(
