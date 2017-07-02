@@ -183,15 +183,7 @@ def is_tweet_garbage(tweet):
         print >>sys.stderr, "GARBAGE: ehh. retweet"
         return True
 
-    if tweet.user.default_profile:
-        print >>sys.stderr, "GARBAGE: Default profile"
-        return True
-
-    if tweet.user.default_profile_image:
-        print >>sys.stderr, "GARBAGE: Default profile image"
-        return True
-
-    if len(tweet.text) < 10:
+    if len(tweet.text) < 8:
         print >>sys.stderr, "GARBAGE: Too short"
         return True
 
@@ -207,13 +199,11 @@ def is_tweet_garbage(tweet):
         print >>sys.stderr, "GARBAGE: starts with RT"
         return True
 
-    if tweet.user.followers_count < 10:
+    if tweet.user.followers_count < 2:
         print >>sys.stderr, "GARBAGE: too few followers"
         return True
 
-    if tweet.user.description is None:
-        print >>sys.stderr, "GARBAGE: no description"
-        return True
+
 
     return False
 

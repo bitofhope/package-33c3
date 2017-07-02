@@ -8,8 +8,6 @@ local M = {}
 
 local font, room_font, info_bar_font
 local white = resource.create_colored_texture(1,1,1)
-local full_overlay = resource.create_colored_texture(1,0,0,0.3)
-local full_overlay_2 = resource.create_colored_texture(0,0,0,0.8)
 local header_color
 local content_color
 local content_color_tex
@@ -27,7 +25,6 @@ local last_talk
 local other_talks = {}
 local last_check_min = 0
 local day = 0
-local full = {}
 
 local M = {}
 
@@ -55,10 +52,6 @@ function M.updated_schedule_json(new_schedule)
     schedule = new_schedule
 end
 
-function M.updated_saalvoll_json(new_full)
-    print "new full"
-    full = new_full
-end
 
 function M.updated_config_json(config)
     rooms = {}
@@ -136,14 +129,14 @@ local function check_next_talk()
     local function format_talk(talk)
         talk.next_talk_lines = utils.wrap(talk.title, 30)
         talk.other_talks_lines = utils.wrap(talk.title, 50)
-        talk.abstract_lines = utils.wrap(talk.abstract, 60)
+        talk.abstract_lines = utils.wrap(talk.abstract, 79)
         if rooms[talk.place] then
             talk.place_short = rooms[talk.place].name_short
         else
             talk.place_short = talk.place
         end
         if not talk.speakers or #talk.speakers == 0 then
-            talk.speaker_line = "unknown speaker"
+            talk.speaker_line = ""
         else
             talk.speaker_line = table.concat(talk.speakers, ", ")
         end
@@ -222,14 +215,14 @@ local function check_next_talk()
             speakers = #talk.speakers == 0 and {"?"} or talk.speakers;
             place = talk.place;
             place_short = talk.place_short;
-            lines = utils.wrap(talk.title .. " (" .. talk.lang .. ")", 30);
+            lines = utils.wrap(talk.title, 30);
             start_str = talk.start_str;
             start_unix = talk.start_unix;
             redundant = redundant;
             started = talk.start_unix < now;
         }
         scroller[#scroller+1] = {
-            text = "@" .. talk.start_str .. ": " .. talk.title .. " at " .. talk.place_short
+            text = "@" .. talk.start_str .. ": " .. talk.title .. " " .. talk.place_short .. "ssa "
         }
         if talk.start_unix > now then
             places[talk.place] = true
@@ -250,24 +243,24 @@ local function view_next_talk(starts, ends)
     end
 
     if #schedule == 0 then
-        text(300, 350, "Loading...", 80, rgba(header_color))
+        text(300, 350, "Ladataan...", 80, rgba(header_color))
     elseif not current_talk then
-        text(300, 350, "Nope. That's it.", 80, rgba(header_color))
+        text(300, 350, "Päivä ohi!", 80, rgba(header_color))
     else
         local delta = current_talk.start_unix - api.clock.get_unix()
         if delta > 0 then
-            a.add(text_or_image(S, E, "next talk", rgba(header_color)))
+            a.add(text_or_image(S, E, "seuraava ohjelma", rgba(header_color)))
         else
-            a.add(text_or_image(S, E, "this talk", rgba(header_color)))
+            a.add(text_or_image(S, E, "juuri nyt menossa", rgba(header_color)))
         end
 
         text(10, 350, current_talk.start_str, 50, rgba(content_color))
         if delta > 180*60 then
-            text(10, 350 + 60, string.format("in %d h", math.floor(delta/3600)), 50,
+            text(10, 350 + 60, string.format("alkuun %d t", math.floor(delta/3600)), 50,
                 rgba(content_color)
             )
         elseif delta > 0 then
-            text(10, 350 + 60, string.format("in %d min", math.floor(delta/60)+1), 50,
+            text(10, 350 + 60, string.format("alkuun %d min", math.floor(delta/60)+1), 50,
                 rgba(content_color)
             )
         end
@@ -307,20 +300,15 @@ local function view_talk_info(starts, ends)
         return a.add(anims.moving_font(S, E, font, ...))
     end
 
-    a.add(text_or_image(S, E, "this talk", rgba(header_color)))
+    a.add(text_or_image(S, E, "tämä ohjelma", rgba(header_color)))
     if not this_talk then
-        text(250, 400, "NO CURRENT SHOW", 80, rgba(header_color))
+        text(250, 400, "EI OHJELMAA", 80, rgba(header_color))
     else
-        local y = 350
+        local y = 250
         for idx = 1, #this_talk.abstract_lines do
             local line = this_talk.abstract_lines[idx]
-            text(10, y, line, 40, rgba(content_color))
+            text(10, y, line, 33, rgba(content_color))
             y = y + 40
-        end
-        if this_talk.link ~= "" then
-            y = y + 5
-            text(10, y, this_talk.link, 30, rgba(content_color, 0.8))
-            y = y + 30
         end
 
         if background then
@@ -363,18 +351,18 @@ local function view_other_talks(starts, ends)
         text(10, y, talk.start_str, 50, rgba(content_color))
 
         a.add(anims.moving_font(S, E, room_font, 170, y,
-            talk.place_short, 50, rgba(content_color)
+            talk.place_short, 40, rgba(content_color)
         ))
         for idx = 1, #talk.other_talks_lines do
             local title = talk.other_talks_lines[idx]
-            text(460, y, title, 30, rgba(content_color))
+            text(480, y, title, 40, rgba(content_color))
             y = y + 32
         end
-        text(460, y, talk.speaker_line, 26, rgba(content_color, 0.8))
+        text(480, y, talk.speaker_line, 26, rgba(content_color, 0.8))
         y = y + 32
     end
 
-    a.add(text_or_image(S, E, "other talks", rgba(header_color)))
+    a.add(text_or_image(S, E, "muut ohjelmat", rgba(header_color)))
 
     local time_sep = false
     if #other_talks > 0 then
@@ -392,7 +380,7 @@ local function view_other_talks(starts, ends)
             end
         end
     else
-        text(300, 350, "No other talks.", 80, rgba(content_color))
+        text(300, 350, "Ei muita ohjelmia.", 80, rgba(content_color))
         y = y + 80
     end
 
@@ -459,11 +447,10 @@ local function view_all_talks(starts, ends, custom)
     local y = 20
     local x = 100
 
-    if #next_talks == 0 and #schedule > 0 and sys.now() > 30 then
-        text(font, x+180, (a.height-160)/2, "No more talks :(", 160, 1,1,1,1); y=y+60; S=S+0.5
+    if #next_talks == 0 and #schedule > 0 and sys.now() > 30  then
+        text(font, x+180, (a.height-160)/2, "Ei enää ohjelmia", 160, 1,1,1,1); y=y+60; S=S+0.5
     end
 
-    local full_shown = {}
     local now = api.clock.get_unix()
 
     for idx = 1, #next_talks do
@@ -476,28 +463,24 @@ local function view_all_talks(starts, ends, custom)
         local start_y = y
 
         local time
-        local show_full = false
         local til = talk.start_unix - now
         if til > -60 and til < 60 then
-            time = "Now"
+            time = "Nyt"
             local w = font:width(time, TIME_SIZE)
             -- 009a93
             text(font, x+SPLIT_X-20-w, y, time, TIME_SIZE, 0,.6,0.57,1)
-            show_full = true
         elseif til > 0 and til < 15 * 60 then
-            time = string.format("In %d min", math.floor(til/60))
+            time = string.format("%d min", math.floor(til/60))
             local w = font:width(time, TIME_SIZE)
             text(font, x+SPLIT_X-20-w, y, time, TIME_SIZE, 0,.6,0.57,1)
-            show_full = true
         elseif talk.start_unix > now then
             time = talk.start_str
             local w = font:width(time, TIME_SIZE)
             text(font, x+SPLIT_X-20-w, y, time, TIME_SIZE, 1,1,1,1)
         else
-            time = string.format("%d min ago", math.ceil(-til/60))
+            time = string.format("Menossa", math.ceil(-til/60))
             local w = font:width(time, TIME_SIZE)
             text(font, x+SPLIT_X-20-w, y, time, TIME_SIZE, .5,.5,.5,1)
-            show_full = true
         end
 
         for idx = 1, #talk.lines do
@@ -529,21 +512,6 @@ local function view_all_talks(starts, ends, custom)
 
         y = y + SPEAKER_SIZE
 
-        if show_full and full[talk.place] and not full_shown[talk.place] then
-            full_shown[talk.place] = true
-            local FULL_SIZE = 80
-            local y_center = start_y + (y - start_y)/2 - FULL_SIZE/2
-            local overlay_x = math.max(line_x + 10, 1270)
-            a.add(anims.moving_image_raw(S,E, full_overlay,
-                10, start_y, overlay_x, y
-            ))
-            a.add(anims.moving_image_raw(S+4,E, full_overlay_2,
-                10, start_y, overlay_x, y
-            ))
-            a.add(anims.moving_font(S+4, E, font, x + SPLIT_X + 80, y_center, 
-                "FULL: NO ENTRY", FULL_SIZE, 1,0,0,1
-            ))
-        end
 
         -- for j = 1, #talk.speakers do
         --     local speaker = talk.speakers[j]
@@ -567,14 +535,14 @@ end
 
 local function view_info_bar(starts, ends)
     for now, x1, y1, x2, y2 in api.from_to(starts, ends) do
-        local line = current_room.name_short.. "    DAY " .. day .. "    " .. api.clock.get_human()
+        local line = current_room.name_short.. "    Päivä  " .. day .. "    " .. api.clock.get_human()
         info_bar_font:write(x1, y1, line, y2 - y1, 1,1,1,1)
     end
 end
 
 local function view_clock(starts, ends)
     for now, x1, y1, x2, y2 in api.from_to(starts, ends) do
-        local line = "DAY " .. day .. "    " .. api.clock.get_human()
+        local line = "Päivä " .. day .. "    " .. api.clock.get_human()
         if background then
             local margin = 10 -- XXX: configurable?
             background:draw(x1, y1-margin, x2, y2+margin)
