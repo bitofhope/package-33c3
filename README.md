@@ -1,5 +1,7 @@
 # The info-beamer hosted package running at 33c3
 
+## NOTE! This is a modified version with poorly written ad-hoc code. Check upstream for a better base until code has been improved.
+
 For 33c3 I've developed a new approach to scheduling
 and layout. [Last year's version](https://github.com/info-beamer/package-32c3-screens)
 uses a mostly fixed layout of scroller, main content and an
